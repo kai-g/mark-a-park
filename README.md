@@ -1,7 +1,7 @@
 # mark-a-park
 
 **Project Title:**
-Mark-A-Park: A Parking Availability Monitoring System for Commercial and Hospitality Establishments
+      Mark-A-Park: A Parking Availability Monitoring System for Commercial and Hospitality Establishments
 
 **Description:**
 
@@ -27,6 +27,38 @@ Mark-A-Park is an IoT-based parking monitoring solution designed specifically fo
       Color-coded parking status
       2D parking map view   
     
-**Installation Instructions:** Instructions on how to clone and run the app locally (for others or future you).
+**Installation Instructions:** 
+      
+      Option 1.
+      1. Clone the repository: 
+                  git clone https://github.com/kai-g/mark-a-park.git
+      2. Using VS Code or Android Studio, open the project.
+      3. Install required dependencies: 
+                  flutter pub get
+      4. Start an emulator or connect an android device
+      5. Run application: 
+                  flutter run
 
-**Setup:** Instructions for setting up IoT devices and cloud services.
+      Option 2. 
+      1. Click the Code button in the project GitHub repository 
+      2. Select Download ZIP, then extract the file to your computer.
+      3. Using VS Code or Android Studio, open the project.
+      4. Open a terminal inside the project folder
+      5. Install required dependencies: 
+                  flutter pub get
+      6. Start an emulator or connect an android device
+      7. Run application: 
+                  flutter run
+
+**Setup:** 
+
+      IoT Devices
+            Install sensors in each parking slot and at entrance/exit of parking gates
+            Connect sensors to a microcontroller (ESP32 or Arduino)
+            Configure WiFi
+            Program the microcontroller to send parking data to the cloud database
+
+      Cloud Service
+            Set up a cloud database for real-time parking data
+            Connect IoT devices and Flutter application to the cloud platform
+            
