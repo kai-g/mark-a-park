@@ -12,43 +12,43 @@ Mark-A-Park is an IoT-based parking monitoring solution designed specifically fo
       Flutter
       Dart
       IoT
-      Cloud Computing (mention the cloud platform you’re using).
+      Firebase
     
 **Features:**
     
     Hardware Features
-      Parking slot sensors
-      Entrance and exit vehicle counters
-      Real-time parking monitoring
+            Parking slot sensors
+            Entrance and exit vehicle counters
+            Real-time parking monitoring
       
     User Features
-      Total parking availability display
-      Available and occupied slot count
-      Color-coded parking status
-      2D parking map view   
+            Total parking availability display
+            Available and occupied slot count
+            Color-coded parking status
+            2D parking map view   
     
 **Installation Instructions:** 
       
       Option 1.
-      1. Clone the repository: 
-                  git clone https://github.com/kai-g/mark-a-park.git
-      2. Using VS Code or Android Studio, open the project.
-      3. Install required dependencies: 
-                  flutter pub get
-      4. Start an emulator or connect an android device
-      5. Run application: 
-                  flutter run
+            1. Clone the repository: 
+                        git clone https://github.com/kai-g/mark-a-park.git
+            2. Using VS Code or Android Studio, open the project.
+            3. Install required dependencies: 
+                        flutter pub get
+            4. Start an emulator or connect an android device
+            5. Run application: 
+                        flutter run
 
       Option 2. 
-      1. Click the Code button in the project GitHub repository 
-      2. Select Download ZIP, then extract the file to your computer.
-      3. Using VS Code or Android Studio, open the project.
-      4. Open a terminal inside the project folder
-      5. Install required dependencies: 
-                  flutter pub get
-      6. Start an emulator or connect an android device
-      7. Run application: 
-                  flutter run
+            1. Click the Code button in the project GitHub repository 
+            2. Select Download ZIP, then extract the file to your computer.
+            3. Using VS Code or Android Studio, open the project.
+            4. Open a terminal inside the project folder
+            5. Install required dependencies: 
+                        flutter pub get
+            6. Start an emulator or connect an android device
+            7. Run application: 
+                        flutter run
 
 **Setup:** 
 
