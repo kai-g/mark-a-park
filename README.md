@@ -14,7 +14,7 @@ Mark-A-Park is an IoT-based parking monitoring solution designed specifically fo
       IoT
       Cloud Computing (mention the cloud platform you’re using).
     
-**Features:** List the features you plan to implement (e.g., user authentication, real-time IoT data, etc.).
+**Features:**
     
     Hardware Features
       Parking slot sensors
