@@ -17,7 +17,7 @@ Mark-A-Park is an IoT-based parking monitoring solution designed specifically fo
 **Features:** List the features you plan to implement (e.g., user authentication, real-time IoT data, etc.).
     
     Hardware Features
-      Parking slot sensors (detect occupied or available)
+      Parking slot sensors
       Entrance and exit vehicle counters
       Real-time parking monitoring
       
