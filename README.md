@@ -23,11 +23,21 @@ Mark-A-Park is an IoT-based parking monitoring solution designed specifically fo
             Entrance and exit vehicle counters
             Real-time parking monitoring
       
-    User Features
+    User-Facing Features
             Total parking availability display
             Available and occupied slot count
             Color-coded parking status
             2D parking map view   
+
+    Admin-Facing Features
+            Total parking availability display
+            Available and occupied slot count
+            Color-coded parking status
+            2D parking map view
+            Display of the total number of vehicles that have entered and exited the parking area
+            Per-slot timer showing the duration of the current occupant
+            Ability to manually set a parking slot’s status to “Unavailable” (e.g., for maintenance or reserved use), preventing users from occupying it
+
     
 **Installation Instructions:** 
       
