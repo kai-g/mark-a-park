@@ -1,16 +1,76 @@
-# sensor_test1
+# mark-a-park 
 
-A new Flutter project.
+ITE 013 | IT32S3 | GROUP 2  
 
-## Getting Started
+**Project Title:**
+      Mark-A-Park: A Parking Availability Monitoring System for Commercial and Hospitality Establishments
 
-This project is a starting point for a Flutter application.
+**Description:**
 
-A few resources to get you started if this is your first Flutter project:
+Mark-A-Park is an IoT-based parking monitoring solution designed specifically for commercial and hospitality establishments, where large volumes of vehicles arrive and leave within short time periods. The system uses sensors, wireless communication, and a software application to monitor parking occupancy in real time and present the information to both drivers and administrators.The primary goal of the system is to optimize parking usage, reduce congestion, improve user experience, and provide actionable data to event organizers.
+      
+**Technologies Used:** 
+     
+      Flutter
+      Dart
+      IoT
+      Firebase
+    
+**Features:**
+    
+    Hardware Features
+            Parking slot sensors
+            Entrance and exit vehicle counters
+            Real-time parking monitoring
+      
+    User-Facing Features
+            Total parking availability display
+            Available and occupied slot count
+            Color-coded parking status
+            2D parking map view   
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+    Admin-Facing Features
+            Total parking availability display
+            Available and occupied slot count
+            Color-coded parking status
+            2D parking map view
+            Display of the total number of vehicles that have entered and exited the parking area
+            Per-slot timer showing the duration of the current occupant
+            Ability to manually set a parking slot’s status to “Unavailable” (e.g., for maintenance or reserved use), preventing users from occupying it
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+    
+**Installation Instructions:** 
+      
+      Option 1.
+            1. Clone the repository: 
+                        git clone https://github.com/kai-g/mark-a-park.git
+            2. Using VS Code or Android Studio, open the project.
+            3. Install required dependencies: 
+                        flutter pub get
+            4. Start an emulator or connect an android device
+            5. Run application: 
+                        flutter run
+
+      Option 2. 
+            1. Click the Code button in the project GitHub repository 
+            2. Select Download ZIP, then extract the file to your computer.
+            3. Using VS Code or Android Studio, open the project.
+            4. Open a terminal inside the project folder
+            5. Install required dependencies: 
+                        flutter pub get
+            6. Start an emulator or connect an android device
+            7. Run application: 
+                        flutter run
+
+**Setup:** 
+
+      IoT Devices
+            Install sensors in each parking slot and at entrance/exit of parking gates
+            Connect sensors to a microcontroller (ESP32 or Arduino)
+            Configure WiFi
+            Program the microcontroller to send parking data to the cloud database
+
+      Cloud Service
+            Set up a cloud database for real-time parking data
+            Connect IoT devices and Flutter application to the cloud platform
+            
