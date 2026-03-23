@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "838378501583",
+    "firebase_url": "https://sensor-test1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "sensor-test1",
+    "storage_bucket": "sensor-test1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838378501583:android:2aa021616ffb3091748eba",
+        "android_client_info": {
+          "package_name": "com.example.sensor_test1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrQNA0sgSiT3zqmvAWpoCWeKSrXE9q8Bc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
