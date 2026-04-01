@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_state_c.dart';
 
 class DashboardScreenC extends StatelessWidget {
   const DashboardScreenC({super.key});
@@ -109,21 +110,27 @@ class DashboardScreenC extends StatelessWidget {
                           icon: Icons.confirmation_number,
                           label: "Vehicle Entry",
                           color: kPrimaryYellow,
-                          onTap: () {},
+                          onTap: () {
+                              AppStateC.currentTabIndex.value = 1;
+                            },
                         ),
                         const SizedBox(height: 10),
                         _CashierButton(
                           icon: Icons.receipt_long,
                           label: "Vehicle Exit",
                           color: kPrimaryYellow,
-                          onTap: () {},
+                          onTap: () {
+                              AppStateC.currentTabIndex.value = 2;
+                            },
                         ),
                         const SizedBox(height: 10),
                         _CashierButton(
                           icon: Icons.history,
                           label: "Transaction History",
                           color: kPrimaryYellow,
-                          onTap: () {},
+                          onTap: () {
+                              AppStateC.currentTabIndex.value = 3;
+                            },
                         ),
                       ],
                     ),

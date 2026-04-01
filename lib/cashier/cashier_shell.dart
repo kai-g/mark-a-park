@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'app_state_c.dart';
 import 'dashboard_screen_c.dart';
+import 'entry.dart';
+import 'exit.dart';
+import 'transaction_history.dart';
 import 'profile_screen_c.dart';
 
 // PLACEHOLDER SCREEN - TO CHANGE
@@ -9,7 +12,7 @@ class EntryScreenC extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("VEHICLE ENTRY - NOT YET BUILT"));
+    return const EntryScreen();
   }
 }
 
@@ -19,7 +22,7 @@ class ExitScreenC extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("VEHICLE EXIT - NOT YET BUILT"));
+    return const ExitScreen();
   }
 }
 
@@ -38,6 +41,7 @@ class CashierShell extends StatelessWidget {
           DashboardScreenC(),
           EntryScreenC(),
           ExitScreenC(),
+          TransactionHistoryScreen(),
           ProfileScreenC(),
         ];
 
@@ -52,9 +56,10 @@ class CashierShell extends StatelessWidget {
             selectedItemColor: kAccentGold,
             unselectedItemColor: kMutedText,
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Dashboard"),
               BottomNavigationBarItem(icon: Icon(Icons.login), label: "Entry"),
               BottomNavigationBarItem(icon: Icon(Icons.logout), label: "Exit"),
+              BottomNavigationBarItem(icon: Icon(Icons.history), label: "History"),
               BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
             ],
           ),
