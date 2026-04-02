@@ -14,15 +14,34 @@ class _EntryScreenState extends State<EntryScreen> {
   static const Color kPrimaryYellow = Color(0xFFF7D66C);
 
   final TextEditingController plateController = TextEditingController();
-  final TextEditingController vehicleTypeController =
-      TextEditingController(text: 'Car');
   final TextEditingController notesController = TextEditingController();
+
+  String selectedVehicleType = 'Car';
 
   bool isSaving = false;
 
-  String generateTicketNumber() {
-    final now = DateTime.now();
-    return 'TKT-${now.millisecondsSinceEpoch}';
+  final List<String> vehicleTypes = const [
+    'Car',
+    'Motorcycle',
+    'SUV',
+    'Van',
+    'Pickup',
+    'Truck',
+  ];
+
+  String getPlatePrefix(String plate) {
+    final clean = plate.replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    if (clean.length >= 3) {
+      return clean.substring(0, 3);
+    }
+    return clean.padRight(3, 'X');
+  }
+
+  String formatTicketDate(DateTime dt) {
+    final month = dt.month.toString().padLeft(2, '0');
+    final day = dt.day.toString().padLeft(2, '0');
+    final year = dt.year.toString().substring(2);
+    return '$month$day$year';
   }
 
   String formatDateTime(DateTime dt) {
@@ -37,9 +56,52 @@ class _EntryScreenState extends State<EntryScreen> {
     return '$month/$day/$year  $hour:$minute $suffix';
   }
 
+  Future<int> getTodayTicketCount() async {
+    final dateKey = formatTicketDate(DateTime.now());
+    int count = 0;
+
+    final activeSnapshot =
+        await FirebaseDatabase.instance.ref('activeTickets').get();
+    if (activeSnapshot.exists && activeSnapshot.value is Map) {
+      final activeData = Map<String, dynamic>.from(activeSnapshot.value as Map);
+      for (final value in activeData.values) {
+        final item = Map<String, dynamic>.from(value);
+        final ticket = item['ticketNumber']?.toString() ?? '';
+        if (ticket.contains('-$dateKey-')) {
+          count++;
+        }
+      }
+    }
+
+    final transactionSnapshot =
+        await FirebaseDatabase.instance.ref('transactions').get();
+    if (transactionSnapshot.exists && transactionSnapshot.value is Map) {
+      final transactionData =
+          Map<String, dynamic>.from(transactionSnapshot.value as Map);
+      for (final value in transactionData.values) {
+        final item = Map<String, dynamic>.from(value);
+        final ticket = item['ticketNumber']?.toString() ?? '';
+        if (ticket.contains('-$dateKey-')) {
+          count++;
+        }
+      }
+    }
+
+    return count + 1;
+  }
+
+  Future<String> generateTicketNumber(String plateNumber) async {
+    final now = DateTime.now();
+    final prefix = getPlatePrefix(plateNumber);
+    final datePart = formatTicketDate(now);
+    final count = await getTodayTicketCount();
+    final countPart = count.toString().padLeft(2, '0');
+
+    return '$prefix-$datePart-$countPart';
+  }
+
   Future<void> saveEntry() async {
     final plateNumber = plateController.text.trim().toUpperCase();
-    final vehicleType = vehicleTypeController.text.trim();
     final notes = notesController.text.trim();
 
     if (plateNumber.isEmpty) {
@@ -51,14 +113,15 @@ class _EntryScreenState extends State<EntryScreen> {
 
     try {
       final now = DateTime.now();
-      final ticketNumber = generateTicketNumber();
+      final ticketNumber = await generateTicketNumber(plateNumber);
 
-      final activeTicketRef = FirebaseDatabase.instance.ref('activeTickets').push();
+      final activeTicketRef =
+          FirebaseDatabase.instance.ref('activeTickets').push();
 
       await activeTicketRef.set({
         'ticketNumber': ticketNumber,
         'plateNumber': plateNumber,
-        'vehicleType': vehicleType.isEmpty ? 'Car' : vehicleType,
+        'vehicleType': selectedVehicleType,
         'timeEntered': now.toIso8601String(),
         'timeEnteredDisplay': formatDateTime(now),
         'entryCashierId': Session.userKey ?? '',
@@ -81,6 +144,8 @@ class _EntryScreenState extends State<EntryScreen> {
               const SizedBox(height: 8),
               Text('Plate Number: $plateNumber'),
               const SizedBox(height: 8),
+              Text('Vehicle Type: $selectedVehicleType'),
+              const SizedBox(height: 8),
               Text('Time Entered: ${formatDateTime(now)}'),
             ],
           ),
@@ -89,9 +154,10 @@ class _EntryScreenState extends State<EntryScreen> {
               onPressed: () {
                 Navigator.pop(context);
                 plateController.clear();
-                vehicleTypeController.text = 'Car';
                 notesController.clear();
-                setState(() {});
+                setState(() {
+                  selectedVehicleType = 'Car';
+                });
               },
               child: const Text('OK'),
             ),
@@ -136,7 +202,6 @@ class _EntryScreenState extends State<EntryScreen> {
   @override
   void dispose() {
     plateController.dispose();
-    vehicleTypeController.dispose();
     notesController.dispose();
     super.dispose();
   }
@@ -187,24 +252,8 @@ class _EntryScreenState extends State<EntryScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                const Text(
-                  "CREATE PARKING ENTRY",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                const Text(
-                  "ENTER VEHICLE INFORMATION",
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                //const SizedBox(height: 14),
+                //const SizedBox(height: 3),
                 const SizedBox(height: 14),
                 _CardBox(
                   title: "Vehicle Information",
@@ -221,12 +270,24 @@ class _EntryScreenState extends State<EntryScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        TextField(
-                          controller: vehicleTypeController,
+                        DropdownButtonFormField<String>(
+                          value: selectedVehicleType,
                           decoration: inputDecoration(
                             hint: "Vehicle Type",
                             icon: Icons.local_shipping_outlined,
                           ),
+                          items: vehicleTypes.map((type) {
+                            return DropdownMenuItem<String>(
+                              value: type,
+                              child: Text(type),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            setState(() {
+                              selectedVehicleType = value;
+                            });
+                          },
                         ),
                         const SizedBox(height: 10),
                         TextField(

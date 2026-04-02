@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../auth/session.dart';
+import 'active_tickets.dart';
 
 class ExitScreen extends StatefulWidget {
   const ExitScreen({super.key});
@@ -98,8 +99,6 @@ class _ExitScreenState extends State<ExitScreen> {
   }
 
   double get amountDue {
-    // Simple prototype rule:
-    // Flat rate 50 pesos
     return 50.0;
   }
 
@@ -121,6 +120,22 @@ class _ExitScreenState extends State<ExitScreen> {
     hour = hour % 12;
     if (hour == 0) hour = 12;
     return '$month/$day/$year  $hour:$minute $suffix';
+  }
+
+  Future<void> openActiveTickets() async {
+    final selectedTicket = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ActiveTicketsScreen(),
+      ),
+    );
+
+    if (selectedTicket != null && selectedTicket.isNotEmpty) {
+      setState(() {
+        ticketController.text = selectedTicket;
+      });
+      await findTicket();
+    }
   }
 
   Future<void> confirmExit() async {
@@ -284,7 +299,7 @@ class _ExitScreenState extends State<ExitScreen> {
                 ),
                 const SizedBox(height: 14),
                 _CardBox(
-                  title: "Find Ticket",
+                  title: "Enter Ticket",
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Column(
@@ -294,6 +309,27 @@ class _ExitScreenState extends State<ExitScreen> {
                           decoration: inputDecoration(
                             hint: "Enter Ticket Number",
                             icon: Icons.confirmation_number_outlined,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 46,
+                          child: ElevatedButton.icon(
+                            onPressed: openActiveTickets,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryYellow,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            icon: const Icon(Icons.list_alt),
+                            label: const Text(
+                              "View Tickets",
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
