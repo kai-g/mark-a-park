@@ -70,7 +70,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
 
   // PALETTE
   static const Color kGoldBg = Color(0xFFEAF27A);
-  static const Color kCardShadow = Color(0x22000000);
+  //static const Color kCardShadow = Color(0x22000000);
 
   static const Color kPrimaryYellow = Color(0xFFF7D66C);
   static const Color kAccentGold = Color(0xFFA98420);

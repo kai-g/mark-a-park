@@ -1,11 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'app_state_c.dart';
 
-class DashboardScreenC extends StatelessWidget {
+class DashboardScreenC extends StatefulWidget {
   const DashboardScreenC({super.key});
+
+  @override
+  State<DashboardScreenC> createState() => _DashboardScreenCState();
+}
+
+class _DashboardScreenCState extends State<DashboardScreenC> {
 
   static const Color kGoldBg = Color(0xFFEAF27A);
   static const Color kPrimaryYellow = Color(0xFFF7D66C);
+
+  // DASHBOARD VALUES
+  int carsEnteredToday = 0;
+  int carsExitedToday = 0;
+  int paidTickets = 0;
+
+  // FIREBASE REFERENCES
+  final parkingRef = FirebaseDatabase.instance.ref('parking');
+  final transactionsRef = FirebaseDatabase.instance.ref('transactions');
+
+  @override
+  void initState() {
+    super.initState();
+
+    // LISTEN PARKING DATA
+    parkingRef.onValue.listen((event) {
+
+      if (!event.snapshot.exists) return;
+
+      final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+
+      setState(() {
+        carsEnteredToday = data['carsEnteredToday'] ?? 0;
+        carsExitedToday = data['carsExitedToday'] ?? 0;
+      });
+    });
+
+    // LISTEN TRANSACTIONS
+    transactionsRef.onValue.listen((event) {
+
+      if (!event.snapshot.exists) {
+        setState(() {
+          paidTickets = 0;
+        });
+        return;
+      }
+
+      final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+
+      setState(() {
+        paidTickets = data.length;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,29 +124,29 @@ class DashboardScreenC extends StatelessWidget {
                 _CardBox(
                   title: "Quick Overview",
                   child: Column(
-                    children: const [
-                      SizedBox(height: 8),
+                    children: [
+                      const SizedBox(height: 8),
                       _InfoRow(
                         icon: Icons.login,
                         iconColor: Colors.blue,
                         label: "Cars Entered Today",
-                        value: "0",
+                        value: carsEnteredToday.toString(), // UPDATED VALUE
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       _InfoRow(
                         icon: Icons.logout,
                         iconColor: Colors.red,
                         label: "Cars Exited Today",
-                        value: "0",
+                        value: carsExitedToday.toString(), // UPDATED VALUE
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       _InfoRow(
                         icon: Icons.payments,
                         iconColor: Colors.green,
                         label: "Paid Tickets",
-                        value: "0",
+                        value: paidTickets.toString(), // UPDATED VALUE
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                     ],
                   ),
                 ),
@@ -111,8 +162,8 @@ class DashboardScreenC extends StatelessWidget {
                           label: "Vehicle Entry",
                           color: kPrimaryYellow,
                           onTap: () {
-                              AppStateC.currentTabIndex.value = 1;
-                            },
+                            AppStateC.currentTabIndex.value = 1;
+                          },
                         ),
                         const SizedBox(height: 10),
                         _CashierButton(
@@ -120,8 +171,8 @@ class DashboardScreenC extends StatelessWidget {
                           label: "Vehicle Exit",
                           color: kPrimaryYellow,
                           onTap: () {
-                              AppStateC.currentTabIndex.value = 2;
-                            },
+                            AppStateC.currentTabIndex.value = 2;
+                          },
                         ),
                         const SizedBox(height: 10),
                         _CashierButton(
@@ -129,8 +180,8 @@ class DashboardScreenC extends StatelessWidget {
                           label: "Transaction History",
                           color: kPrimaryYellow,
                           onTap: () {
-                              AppStateC.currentTabIndex.value = 3;
-                            },
+                            AppStateC.currentTabIndex.value = 3;
+                          },
                         ),
                       ],
                     ),

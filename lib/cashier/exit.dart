@@ -106,8 +106,10 @@ class _ExitScreenState extends State<ExitScreen> {
     return double.tryParse(cashReceivedController.text.trim()) ?? 0.0;
   }
 
+  // CALCULATE CHANGE
   double get change {
-    return cashReceived - amountDue;
+    final value = cashReceived - amountDue;
+    return value < 0 ? 0 : value;
   }
 
   String formatDateTime(DateTime dt) {
