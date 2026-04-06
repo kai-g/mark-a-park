@@ -1,11 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:sensor_test1/admin/app_state_a.dart';
 
-class DashboardScreenA extends StatelessWidget {
+
+class DashboardScreenA extends StatefulWidget {
   const DashboardScreenA({super.key});
+
+  @override
+  State<DashboardScreenA> createState() => _DashboardScreenAState();
+}
+
+class _DashboardScreenAState extends State<DashboardScreenA> {
 
   static const Color kGoldBg = Color(0xFFEAF27A);
   static const Color kPrimaryYellow = Color(0xFFF7D66C);
   static const Color kAccentGold = Color(0xFFA98420);
+
+// FIREBASE REFERENCES
+final DatabaseReference parkingRef = FirebaseDatabase.instance.ref("parking");
+final DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+
+// STATE VALUES
+int totalCapacity = 6;
+int occupied = 0;
+int vacant = 6;
+int totalUsers = 0;
+
+@override
+void initState() {
+  super.initState();
+
+  // PARKING LISTENER
+  parkingRef.onValue.listen((event) {
+    final data = event.snapshot.value;
+    if (data is! Map) return;
+
+    final map = Map<String, dynamic>.from(data);
+
+    int occ = 0;
+
+    final slotData = map["slots"];
+    if (slotData is Map) {
+      final slotMap = Map<String, dynamic>.from(slotData);
+      for (final v in slotMap.values) {
+        if (v.toString().toLowerCase() == "occupied") {
+          occ++;
+        }
+      }
+    }
+
+    setState(() {
+      occupied = occ;
+      vacant = totalCapacity - occ;
+    });
+  });
+
+  // USERS LISTENER
+  usersRef.onValue.listen((event) {
+    final data = event.snapshot.value;
+    if (data is! Map) return;
+
+    final map = Map<String, dynamic>.from(data);
+
+    setState(() {
+      totalUsers = map.length;
+    });
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -73,36 +134,36 @@ class DashboardScreenA extends StatelessWidget {
                 _CardBox(
                   title: "Quick Overview",
                   child: Column(
-                    children: const [
-                      SizedBox(height: 8),
+                    children: [
+                      const SizedBox(height: 8),
                       _InfoRow(
                         icon: Icons.directions_car,
-                        iconColor: Color(0xFFF7D66C),
+                        iconColor: const Color(0xFFF7D66C),
                         label: "Total Capacity",
-                        value: "6",
+                        value: "$totalCapacity",
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       _InfoRow(
                         icon: Icons.circle,
                         iconColor: Colors.red,
                         label: "Occupied Slots",
-                        value: "0",
+                        value: "$occupied",
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       _InfoRow(
                         icon: Icons.circle,
                         iconColor: Colors.green,
                         label: "Vacant Slots",
-                        value: "6",
+                        value: "$vacant",
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       _InfoRow(
                         icon: Icons.people,
                         iconColor: Colors.blue,
                         label: "Total Users",
-                        value: "0",
+                        value: "$totalUsers",
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                     ],
                   ),
                 ),
@@ -117,21 +178,27 @@ class DashboardScreenA extends StatelessWidget {
                           icon: Icons.map,
                           label: "Parking Monitoring",
                           color: kPrimaryYellow,
-                          onTap: () {},
+                          onTap: () {
+                            AppStateA.currentTabIndex.value = 1;
+                          },
                         ),
                         const SizedBox(height: 10),
                         _AdminButton(
                           icon: Icons.manage_accounts,
                           label: "Manage Accounts",
                           color: kPrimaryYellow,
-                          onTap: () {},
+                          onTap: () {
+                            AppStateA.currentTabIndex.value = 2;
+                          },
                         ),
                         const SizedBox(height: 10),
                         _AdminButton(
                           icon: Icons.build,
                           label: "Slot Maintenance",
                           color: kPrimaryYellow,
-                          onTap: () {},
+                          onTap: () {
+                            AppStateA.currentTabIndex.value = 3;
+                          },
                         ),
                       ],
                     ),

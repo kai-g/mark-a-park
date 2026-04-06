@@ -1,0 +1,406 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+
+class MonitoringScreenA extends StatefulWidget {
+  const MonitoringScreenA({super.key});
+
+  @override
+  State<MonitoringScreenA> createState() => _MonitoringScreenAState();
+}
+
+class _MonitoringScreenAState extends State<MonitoringScreenA> {
+  final DatabaseReference parkingRef = FirebaseDatabase.instance.ref("parking");
+
+  static const int totalCapacity = 6;
+
+  int carsEntered = 0;
+
+  Map<String, String> slots = const {
+    "A": "vacant",
+    "B": "vacant",
+    "C": "vacant",
+    "D": "vacant",
+    "E": "vacant",
+    "F": "vacant",
+  };
+
+  @override
+  void initState() {
+    super.initState();
+
+    parkingRef.onValue.listen((event) {
+      final data = event.snapshot.value;
+      if (data is! Map) return;
+
+      final map = Map<String, dynamic>.from(data);
+
+      final ce = map["carsEntered"];
+      final nextCarsEntered = (ce is int) ? ce : int.tryParse("$ce") ?? 0;
+
+      final nextSlots = <String, String>{...slots};
+      final slotData = map["slots"];
+      if (slotData is Map) {
+        final slotMap = Map<String, dynamic>.from(slotData);
+        for (final key in nextSlots.keys) {
+          final raw = (slotMap[key] ?? "vacant").toString().toLowerCase();
+          nextSlots[key] = (raw == "occupied") ? "occupied" : "vacant";
+        }
+      }
+
+      setState(() {
+        carsEntered = nextCarsEntered;
+        slots = nextSlots;
+      });
+    });
+  }
+
+  int get occupiedCount =>
+      slots.values.where((v) => v.toLowerCase() == "occupied").length;
+
+  int get vacantCount => totalCapacity - occupiedCount;
+
+  String get interpretationText {
+    if (carsEntered == 0) return "Completely Vacant";
+    if (carsEntered >= 1 && carsEntered <= 2) return "Many Vacant";
+    if (carsEntered == 3) return "Half Full";
+    if (carsEntered >= 4 && carsEntered <= 5) return "Almost Full";
+    if (carsEntered == 6) return "Full";
+    return "Overloaded";
+  }
+
+  // PALETTE
+  static const Color kGoldBg = Color(0xFFEAF27A);
+  //static const Color kCardShadow = Color(0x22000000);
+
+  static const Color kPrimaryYellow = Color(0xFFF7D66C);
+  static const Color kAccentGold = Color(0xFFA98420);
+
+  @override
+  Widget build(BuildContext context) {
+    final Color backgroundColor = kGoldBg;
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Image.asset(
+                      "assets/mark_a_park_app_icon.png",
+                      width: 34,
+                      height: 34,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Monitoring",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          "MARK-A-PARK",
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                //const SizedBox(height: 12),
+                
+                const SizedBox(height: 3),
+                const Text(
+                  "PARKING OVERVIEW",
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _CardBox(
+                  title: "Status",
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 8),
+                      _StatusRow(
+                        icon: Icons.directions_car,
+                        iconColor: kPrimaryYellow,
+                        label: "Total Capacity",
+                        value: "$totalCapacity",
+                        valueColor: kAccentGold,
+                      ),
+                      const SizedBox(height: 10),
+                      _StatusRow(
+                        icon: Icons.login,
+                        iconColor: Colors.blue,
+                        label: "Total Cars Entered",
+                        value: "$carsEntered",
+                        valueColor: Colors.blue,
+                      ),
+                      const SizedBox(height: 10),
+                      _StatusRow(
+                        icon: Icons.circle,
+                        iconColor: Colors.red,
+                        label: "Occupied Slots",
+                        value: "$occupiedCount",
+                        valueColor: Colors.red,
+                      ),
+                      const SizedBox(height: 10),
+                      _StatusRow(
+                        icon: Icons.circle,
+                        iconColor: Colors.green,
+                        label: "Vacant Slots",
+                        value: "$vacantCount",
+                        valueColor: Colors.green,
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _CardBox(
+                  title: "Slots",
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: _SlotPill(letter: "A", status: slots["A"] ?? "vacant")),
+                            const SizedBox(width: 10),
+                            Expanded(child: _SlotPill(letter: "D", status: slots["D"] ?? "vacant")),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(child: _SlotPill(letter: "B", status: slots["B"] ?? "vacant")),
+                            const SizedBox(width: 10),
+                            Expanded(child: _SlotPill(letter: "E", status: slots["E"] ?? "vacant")),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(child: _SlotPill(letter: "C", status: slots["C"] ?? "vacant")),
+                            const SizedBox(width: 10),
+                            Expanded(child: _SlotPill(letter: "F", status: slots["F"] ?? "vacant")),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _InterpretationBox(
+                  text: interpretationText,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CardBox extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const _CardBox({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(height: 1, color: Colors.black12),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+  final Color valueColor;
+
+  const _StatusRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    required this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 22),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SlotPill extends StatelessWidget {
+  final String letter;
+  final String status;
+
+  const _SlotPill({required this.letter, required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = status.toLowerCase();
+    final bool isOccupied = s == "occupied";
+
+    final Color bg = isOccupied ? Colors.red : Colors.green;
+    final String label = isOccupied ? "Occupied" : "Vacant";
+
+    return Container(
+      height: 38,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Text(
+            letter,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InterpretationBox extends StatelessWidget {
+  final String text;
+
+  const _InterpretationBox({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Interpretation",
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(height: 1, color: Colors.black12),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

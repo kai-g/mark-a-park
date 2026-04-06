@@ -2,26 +2,9 @@ import 'package:flutter/material.dart';
 import 'app_state_a.dart';
 import 'dashboard_screen_a.dart';
 import 'profile_screen_a.dart';
-
-// PLACEHOLDER SCREEN - TO CHANGE
-class MonitoringScreenA extends StatelessWidget {
-  const MonitoringScreenA({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("ADMIN MONITORING - NOT YET BUILT"));
-  }
-}
-
-// PLACEHOLDER SCREEN - TO CHANGE
-class AccountsScreenA extends StatelessWidget {
-  const AccountsScreenA({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("ADMIN ACCOUNTS - NOT YET BUILT"));
-  }
-}
+import 'monitoring_a.dart';
+import 'accounts.dart';
+import 'maintenance.dart';
 
 class AdminShell extends StatelessWidget {
   const AdminShell({super.key});
@@ -38,6 +21,7 @@ class AdminShell extends StatelessWidget {
           DashboardScreenA(),
           MonitoringScreenA(),
           AccountsScreenA(),
+          MaintenanceScreenA(),
           ProfileScreenA(),
         ];
 
@@ -52,9 +36,10 @@ class AdminShell extends StatelessWidget {
             selectedItemColor: kAccentGold,
             unselectedItemColor: kMutedText,
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Dashboard"),
               BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: "Monitoring"),
               BottomNavigationBarItem(icon: Icon(Icons.manage_accounts), label: "Accounts"),
+              BottomNavigationBarItem(icon: Icon(Icons.build), label: "Maintenance"),
               BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
             ],
           ),
