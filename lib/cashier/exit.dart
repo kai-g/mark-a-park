@@ -20,6 +20,9 @@ class _ExitScreenState extends State<ExitScreen> {
   bool isSearching = false;
   bool isProcessing = false;
 
+// PAYMENT TYPE
+String paymentType = 'regular';
+
   String? activeTicketKey;
   Map<String, dynamic>? activeTicketData;
 
@@ -99,7 +102,38 @@ class _ExitScreenState extends State<ExitScreen> {
   }
 
   double get amountDue {
-    return 50.0;
+    final mins = durationMinutes;
+
+    // GRACE PERIOD
+    if (mins < 10) {
+      return 0.0;
+    }
+
+    final hours = (mins / 60).ceil();
+
+    double baseRate;
+
+    // FIRST 3 HOURS
+    if (hours <= 3) {
+      baseRate = 50.0;
+    } else {
+      // ADDITIONAL HOURS
+      final extraHours = hours - 3;
+      baseRate = 50.0 + (extraHours * 10);
+    }
+
+    // REGULAR PAYMENT (WITH VAT)
+    if (paymentType == 'regular') {
+      baseRate = baseRate * 1.12;
+    }
+
+    // PWD OR SENIOR
+    if (paymentType == 'pwd' || paymentType == 'senior') {
+      baseRate = baseRate * 0.80;
+    }
+
+    // ROUND TO 2 DECIMALS
+    return double.parse(baseRate.toStringAsFixed(2));
   }
 
   double get cashReceived {
@@ -146,7 +180,8 @@ class _ExitScreenState extends State<ExitScreen> {
       return;
     }
 
-    if (cashReceived < amountDue) {
+    // CHECK PAYMENT ONLY IF NOT FREE
+    if (amountDue > 0 && cashReceived < amountDue) {
       showMessage('Cash received is not enough.');
       return;
     }
@@ -172,6 +207,7 @@ class _ExitScreenState extends State<ExitScreen> {
         'change': change,
         'paymentMethod': 'cash',
         'paymentStatus': 'paid',
+        'paymentType': paymentType,
         'entryCashierId': activeTicketData!['entryCashierId'] ?? '',
         'entryCashierName': activeTicketData!['entryCashierName'] ?? '',
         'exitCashierId': Session.userKey ?? '',
@@ -408,6 +444,63 @@ class _ExitScreenState extends State<ExitScreen> {
                     padding: const EdgeInsets.only(top: 10),
                     child: Column(
                       children: [
+                        // PAYMENT TYPE OPTIONS
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                Radio<String>(
+                                  value: 'regular',
+                                  groupValue: paymentType,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      paymentType = value!;
+                                    });
+                                  },
+                                ),
+                                const Text(
+                                  'Regular (12% VAT)',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Radio<String>(
+                                  value: 'pwd',
+                                  groupValue: paymentType,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      paymentType = value!;
+                                    });
+                                  },
+                                ),
+                                const Text(
+                                  'PWD (-20%, No VAT)',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Radio<String>(
+                                  value: 'senior',
+                                  groupValue: paymentType,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      paymentType = value!;
+                                    });
+                                  },
+                                ),
+                                const Text(
+                                  'Senior (-20%, No VAT)',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
                         TextField(
                           controller: cashReceivedController,
                           keyboardType: TextInputType.number,
