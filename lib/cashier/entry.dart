@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../auth/session.dart';
+import 'select_parking.dart';
 
 class EntryScreen extends StatefulWidget {
   const EntryScreen({super.key});
@@ -16,33 +17,9 @@ class _EntryScreenState extends State<EntryScreen> {
   final TextEditingController plateController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
 
-  String selectedVehicleType = 'Car';
+  String? selectedSlot;
 
   bool isSaving = false;
-
-  final List<String> vehicleTypes = const [
-    'Car',
-    'Motorcycle',
-    'SUV',
-    'Van',
-    'Pickup',
-    'Truck',
-  ];
-
-  String getPlatePrefix(String plate) {
-    final clean = plate.replaceAll(RegExp(r'[^A-Z0-9]'), '');
-    if (clean.length >= 3) {
-      return clean.substring(0, 3);
-    }
-    return clean.padRight(3, 'X');
-  }
-
-  String formatTicketDate(DateTime dt) {
-    final month = dt.month.toString().padLeft(2, '0');
-    final day = dt.day.toString().padLeft(2, '0');
-    final year = dt.year.toString().substring(2);
-    return '$month$day$year';
-  }
 
   String formatDateTime(DateTime dt) {
     final month = dt.month.toString().padLeft(2, '0');
@@ -56,50 +33,6 @@ class _EntryScreenState extends State<EntryScreen> {
     return '$month/$day/$year  $hour:$minute $suffix';
   }
 
-  Future<int> getTodayTicketCount() async {
-    final dateKey = formatTicketDate(DateTime.now());
-    int count = 0;
-
-    final activeSnapshot =
-        await FirebaseDatabase.instance.ref('activeTickets').get();
-    if (activeSnapshot.exists && activeSnapshot.value is Map) {
-      final activeData = Map<String, dynamic>.from(activeSnapshot.value as Map);
-      for (final value in activeData.values) {
-        final item = Map<String, dynamic>.from(value);
-        final ticket = item['ticketNumber']?.toString() ?? '';
-        if (ticket.contains('-$dateKey-')) {
-          count++;
-        }
-      }
-    }
-
-    final transactionSnapshot =
-        await FirebaseDatabase.instance.ref('transactions').get();
-    if (transactionSnapshot.exists && transactionSnapshot.value is Map) {
-      final transactionData =
-          Map<String, dynamic>.from(transactionSnapshot.value as Map);
-      for (final value in transactionData.values) {
-        final item = Map<String, dynamic>.from(value);
-        final ticket = item['ticketNumber']?.toString() ?? '';
-        if (ticket.contains('-$dateKey-')) {
-          count++;
-        }
-      }
-    }
-
-    return count + 1;
-  }
-
-  Future<String> generateTicketNumber(String plateNumber) async {
-    final now = DateTime.now();
-    final prefix = getPlatePrefix(plateNumber);
-    final datePart = formatTicketDate(now);
-    final count = await getTodayTicketCount();
-    final countPart = count.toString().padLeft(2, '0');
-
-    return '$prefix-$datePart-$countPart';
-  }
-
   Future<void> saveEntry() async {
     final plateNumber = plateController.text.trim().toUpperCase();
     final notes = notesController.text.trim();
@@ -109,19 +42,22 @@ class _EntryScreenState extends State<EntryScreen> {
       return;
     }
 
+    if (selectedSlot == null) {
+      showMessage('Please select a parking slot.');
+      return;
+    }
+
     setState(() => isSaving = true);
 
     try {
       final now = DateTime.now();
-      final ticketNumber = await generateTicketNumber(plateNumber);
 
       final activeTicketRef =
           FirebaseDatabase.instance.ref('activeTickets').push();
 
       await activeTicketRef.set({
-        'ticketNumber': ticketNumber,
         'plateNumber': plateNumber,
-        'vehicleType': selectedVehicleType,
+        'parkingSlot': selectedSlot,
         'timeEntered': now.toIso8601String(),
         'timeEnteredDisplay': formatDateTime(now),
         'entryCashierId': Session.userKey ?? '',
@@ -140,13 +76,15 @@ class _EntryScreenState extends State<EntryScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Ticket Number: $ticketNumber'),
-              const SizedBox(height: 8),
               Text('Plate Number: $plateNumber'),
               const SizedBox(height: 8),
-              Text('Vehicle Type: $selectedVehicleType'),
+              Text('Parking Slot: $selectedSlot'),
               const SizedBox(height: 8),
               Text('Time Entered: ${formatDateTime(now)}'),
+              if (notes.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text('Notes: $notes'),
+              ],
             ],
           ),
           actions: [
@@ -156,7 +94,7 @@ class _EntryScreenState extends State<EntryScreen> {
                 plateController.clear();
                 notesController.clear();
                 setState(() {
-                  selectedVehicleType = 'Car';
+                  selectedSlot = null;
                 });
               },
               child: const Text('OK'),
@@ -252,9 +190,8 @@ class _EntryScreenState extends State<EntryScreen> {
                     ),
                   ],
                 ),
-                //const SizedBox(height: 14),
-                //const SizedBox(height: 3),
                 const SizedBox(height: 14),
+
                 _CardBox(
                   title: "Vehicle Information",
                   child: Padding(
@@ -269,27 +206,38 @@ class _EntryScreenState extends State<EntryScreen> {
                             icon: Icons.directions_car_outlined,
                           ),
                         ),
+
                         const SizedBox(height: 10),
-                        DropdownButtonFormField<String>(
-                          value: selectedVehicleType,
-                          decoration: inputDecoration(
-                            hint: "Vehicle Type",
-                            icon: Icons.local_shipping_outlined,
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.local_parking),
+                            label: Text(
+                              selectedSlot == null
+                                  ? "Select Parking"
+                                  : "Slot Selected: $selectedSlot",
+                            ),
+                            onPressed: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const SelectParkingScreen(),
+                                ),
+                              );
+
+                              if (result != null) {
+                                setState(() {
+                                  selectedSlot = result;
+                                });
+                              }
+                            },
                           ),
-                          items: vehicleTypes.map((type) {
-                            return DropdownMenuItem<String>(
-                              value: type,
-                              child: Text(type),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() {
-                              selectedVehicleType = value;
-                            });
-                          },
                         ),
+
                         const SizedBox(height: 10),
+
                         TextField(
                           controller: notesController,
                           maxLines: 3,
@@ -302,7 +250,9 @@ class _EntryScreenState extends State<EntryScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 14),
+
                 _CardBox(
                   title: "Entry Details",
                   child: Padding(
@@ -318,16 +268,13 @@ class _EntryScreenState extends State<EntryScreen> {
                           label: "Time Entered",
                           value: now,
                         ),
-                        const SizedBox(height: 10),
-                        const _ReadOnlyRow(
-                          label: "Ticket Number",
-                          value: "Auto-generated after save",
-                        ),
                       ],
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 14),
+
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -345,7 +292,8 @@ class _EntryScreenState extends State<EntryScreen> {
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.save_outlined),
                     label: Text(

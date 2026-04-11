@@ -43,7 +43,14 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
         final slotMap = Map<String, dynamic>.from(slotData);
         for (final key in nextSlots.keys) {
           final raw = (slotMap[key] ?? "vacant").toString().toLowerCase();
-          nextSlots[key] = (raw == "occupied") ? "occupied" : "vacant";
+          // SUPPORT VACANT / OCCUPIED / UNAVAILABLE
+          if (raw == "occupied") {
+            nextSlots[key] = "occupied";
+          } else if (raw == "unavailable") {
+            nextSlots[key] = "unavailable";
+          } else {
+            nextSlots[key] = "vacant";
+          }
         }
       }
 
@@ -324,9 +331,21 @@ class _SlotPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = status.toLowerCase();
     final bool isOccupied = s == "occupied";
+    final bool isUnavailable = s == "unavailable";
 
-    final Color bg = isOccupied ? Colors.red : Colors.green;
-    final String label = isOccupied ? "Occupied" : "Vacant";
+    Color bg;
+    String label;
+
+    if (isOccupied) {
+      bg = Colors.red;
+      label = "Occupied";
+    } else if (isUnavailable) {
+      bg = Colors.grey;
+      label = "Unavailable";
+    } else {
+      bg = Colors.green;
+      label = "Vacant";
+    }
 
     return Container(
       height: 38,

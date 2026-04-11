@@ -43,7 +43,14 @@ class _MonitoringScreenAState extends State<MonitoringScreenA> {
         final slotMap = Map<String, dynamic>.from(slotData);
         for (final key in nextSlots.keys) {
           final raw = (slotMap[key] ?? "vacant").toString().toLowerCase();
-          nextSlots[key] = (raw == "occupied") ? "occupied" : "vacant";
+          // SUPPORT VACANT / OCCUPIED / UNAVAILABLE
+          if (raw == "occupied") {
+            nextSlots[key] = "occupied";
+          } else if (raw == "unavailable") {
+            nextSlots[key] = "unavailable";
+          } else {
+            nextSlots[key] = "vacant";
+          }
         }
       }
 
@@ -313,15 +320,85 @@ class _SlotPill extends StatelessWidget {
 
   const _SlotPill({required this.letter, required this.status});
 
+  // SHOW ADMIN SLOT OPTIONS
+void _showSlotOptions(BuildContext context, String slot, String status) {
+  final ref = FirebaseDatabase.instance.ref("parking/slots/$slot");
+
+  final s = status.toLowerCase();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text("SLOT $slot: ${s[0].toUpperCase()}${s.substring(1)}"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            // VACANT SLOT
+            if (s == "vacant")
+              ElevatedButton(
+                onPressed: () async {
+                  await ref.set("unavailable");
+                  Navigator.pop(context);
+                },
+                child: const Text("Disable Parking Slot"),
+              ),
+
+            // OCCUPIED SLOT
+            if (s == "occupied") ...[
+              const Text(
+                "Slot currently occupied",
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: null,
+                child: const Text("Disable Parking Slot"),
+              ),
+            ],
+
+            // UNAVAILABLE SLOT
+            if (s == "unavailable")
+              ElevatedButton(
+                onPressed: () async {
+                  await ref.set("vacant");
+                  Navigator.pop(context);
+                },
+                child: const Text("Enable Parking Slot"),
+              ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     final s = status.toLowerCase();
     final bool isOccupied = s == "occupied";
+    final bool isUnavailable = s == "unavailable";
 
-    final Color bg = isOccupied ? Colors.red : Colors.green;
-    final String label = isOccupied ? "Occupied" : "Vacant";
+    Color bg;
+    String label;
 
-    return Container(
+    if (isOccupied) {
+      bg = Colors.red;
+      label = "Occupied";
+    } else if (isUnavailable) {
+      bg = Colors.grey;
+      label = "Unavailable";
+    } else {
+      bg = Colors.green;
+      label = "Vacant";
+    }
+
+    return GestureDetector(
+  onTap: () {
+    _showSlotOptions(context, letter, status);
+  },
+  child: Container(
       height: 38,
       decoration: BoxDecoration(
         color: bg,
@@ -349,6 +426,7 @@ class _SlotPill extends StatelessWidget {
           ),
         ],
       ),
+  ),
     );
   }
 }

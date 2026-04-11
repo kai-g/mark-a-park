@@ -95,17 +95,16 @@ class TransactionHistoryScreen extends StatelessWidget {
                                   Map<String, dynamic>.from(item.value);
 
                               return _TransactionCard(
-                                ticketNumber:
-                                    tx['ticketNumber']?.toString() ?? '',
-                                plateNumber:
-                                    tx['plateNumber']?.toString() ?? '',
-                                timeEnteredDisplay:
-                                    tx['timeEnteredDisplay']?.toString() ?? '',
-                                timeExitedDisplay:
-                                    tx['timeExitedDisplay']?.toString() ?? '',
+                                plateNumber: tx['plateNumber']?.toString() ?? '',
+                                timeEnteredDisplay: tx['timeEnteredDisplay']?.toString() ?? '',
+                                timeExitedDisplay: tx['timeExitedDisplay']?.toString() ?? '',
+                                durationText: tx['durationText']?.toString() ?? '',
+                                parkingSlot: tx['parkingSlot']?.toString() ?? '',
                                 amountDue: (tx['amountDue'] ?? 0).toString(),
-                                paymentStatus:
-                                    tx['paymentStatus']?.toString() ?? '',
+                                amountPaid: (tx['cashReceived'] ?? 0).toString(),
+                                change: (tx['change'] ?? 0).toString(),
+                                paymentType: tx['paymentType']?.toString() ?? '',
+                                paymentStatus: tx['paymentStatus']?.toString() ?? '',
                               );
                             },
                           ),
@@ -121,19 +120,27 @@ class TransactionHistoryScreen extends StatelessWidget {
 }
 
 class _TransactionCard extends StatelessWidget {
-  final String ticketNumber;
   final String plateNumber;
   final String timeEnteredDisplay;
   final String timeExitedDisplay;
+  final String durationText;
+  final String parkingSlot;
   final String amountDue;
+  final String amountPaid;
+  final String change;
+  final String paymentType;
   final String paymentStatus;
 
   const _TransactionCard({
-    required this.ticketNumber,
     required this.plateNumber,
     required this.timeEnteredDisplay,
     required this.timeExitedDisplay,
+    required this.durationText,
+    required this.parkingSlot,
     required this.amountDue,
+    required this.amountPaid,
+    required this.change,
+    required this.paymentType,
     required this.paymentStatus,
   });
 
@@ -157,7 +164,7 @@ class _TransactionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Ticket: $ticketNumber',
+            'Plate Number: $plateNumber',
             style: const TextStyle(
               color: Colors.black,
               fontSize: 15,
@@ -167,18 +174,23 @@ class _TransactionCard extends StatelessWidget {
           const SizedBox(height: 8),
           Container(height: 1, color: Colors.black12),
           const SizedBox(height: 8),
-          Text(
-            'Plate Number: $plateNumber',
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
           Text('Entry: $timeEnteredDisplay'),
-          const SizedBox(height: 4),
-          Text('Exit: $timeExitedDisplay'),
-          const SizedBox(height: 4),
-          Text('Amount Paid: PHP $amountDue'),
-          const SizedBox(height: 4),
-          Text('Status: $paymentStatus'),
+            const SizedBox(height: 4),
+            Text('Exit: $timeExitedDisplay'),
+            const SizedBox(height: 4),
+            Text('Duration: $durationText'),
+            const SizedBox(height: 4),
+            Text('Parking Slot: $parkingSlot'),
+            const SizedBox(height: 4),
+            Text('Amount Due: PHP $amountDue'),
+            const SizedBox(height: 4),
+            Text('Amount Paid: PHP $amountPaid'),
+            const SizedBox(height: 4),
+            Text('Change: PHP $change'),
+            const SizedBox(height: 4),
+            Text('Payment Type: $paymentType'),
+            const SizedBox(height: 4),
+            Text('Status: $paymentStatus'),
         ],
       ),
     );

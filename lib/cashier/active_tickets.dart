@@ -24,19 +24,42 @@ class _ActiveTicketsScreenState extends State<ActiveTicketsScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-                  const SizedBox(width: 6),
-                  const Text(
-                    "Active Tickets",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      Image.asset(
+                        "assets/mark_a_park_app_icon.png",
+                        width: 34,
+                        height: 34,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            "Active Tickets",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            "MARK-A-PARK",
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -67,8 +90,10 @@ class _ActiveTicketsScreenState extends State<ActiveTicketsScreen> {
                     itemBuilder: (context, index) {
                       final item = Map<String, dynamic>.from(entries[index].value);
 
-                      final ticket = item['ticketNumber']?.toString() ?? '';
+                      final ticket = item['plateNumber']?.toString() ?? '';
                       final plate = item['plateNumber']?.toString() ?? '';
+                      final slot = item['parkingSlot']?.toString() ?? '';
+                      final notes = item['notes']?.toString() ?? '';
                       final time = item['timeEnteredDisplay']?.toString() ?? '';
 
                       final isSelected = selectedTicket == ticket;
@@ -94,16 +119,18 @@ class _ActiveTicketsScreenState extends State<ActiveTicketsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              ticket,
+                              ticket, // PLATE NUMBER BTW
                               style: const TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 15,
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Text("Plate: $plate"),
+                            Text("Parking Slot: $slot"),
                             const SizedBox(height: 4),
                             Text("Entry Time: $time"),
+                            const SizedBox(height: 4),
+                            Text("Notes: $notes"),
                             const SizedBox(height: 10),
                             SizedBox(
                               width: double.infinity,

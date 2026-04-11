@@ -14,7 +14,7 @@ class _ExitScreenState extends State<ExitScreen> {
   static const Color kGoldBg = Color(0xFFEAF27A);
   static const Color kPrimaryYellow = Color(0xFFF7D66C);
 
-  final TextEditingController ticketController = TextEditingController();
+  final TextEditingController plateController = TextEditingController();
   final TextEditingController cashReceivedController = TextEditingController();
 
   bool isSearching = false;
@@ -27,10 +27,10 @@ String paymentType = 'regular';
   Map<String, dynamic>? activeTicketData;
 
   Future<void> findTicket() async {
-    final ticketNumber = ticketController.text.trim();
+    final plateNumber = plateController.text.trim().toUpperCase();
 
-    if (ticketNumber.isEmpty) {
-      showMessage('Please enter ticket number.');
+    if (plateNumber.isEmpty) {
+      showMessage('Please enter plate number.');
       return;
     }
 
@@ -54,7 +54,7 @@ String paymentType = 'regular';
 
       for (final entry in data.entries) {
         final ticket = Map<String, dynamic>.from(entry.value);
-        if ((ticket['ticketNumber'] ?? '').toString() == ticketNumber) {
+        if ((ticket['plateNumber'] ?? '').toString().toUpperCase() == plateNumber) {
           foundKey = entry.key;
           foundData = ticket;
           break;
@@ -109,7 +109,8 @@ String paymentType = 'regular';
       return 0.0;
     }
 
-    final hours = (mins / 60).ceil();
+    // TAXES TEXA-
+    final hours = mins ~/ 60;
 
     double baseRate;
 
@@ -168,7 +169,7 @@ String paymentType = 'regular';
 
     if (selectedTicket != null && selectedTicket.isNotEmpty) {
       setState(() {
-        ticketController.text = selectedTicket;
+        plateController.text = selectedTicket;
       });
       await findTicket();
     }
@@ -193,9 +194,10 @@ String paymentType = 'regular';
           FirebaseDatabase.instance.ref('transactions').push();
 
       await transactionRef.set({
-        'ticketNumber': activeTicketData!['ticketNumber'] ?? '',
+        //'ticketNumber': activeTicketData!['ticketNumber'] ?? '',
         'plateNumber': activeTicketData!['plateNumber'] ?? '',
-        'vehicleType': activeTicketData!['vehicleType'] ?? '',
+        'parkingSlot': activeTicketData!['parkingSlot'] ?? '', // SAVE SLOT
+        //'vehicleType': activeTicketData!['vehicleType'] ?? '',
         'timeEntered': activeTicketData!['timeEntered'] ?? '',
         'timeEnteredDisplay': activeTicketData!['timeEnteredDisplay'] ?? '',
         'timeExited': timeExited.toIso8601String(),
@@ -232,7 +234,7 @@ String paymentType = 'regular';
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                ticketController.clear();
+                plateController.clear();
                 cashReceivedController.clear();
                 setState(() {
                   activeTicketKey = null;
@@ -281,7 +283,7 @@ String paymentType = 'regular';
 
   @override
   void dispose() {
-    ticketController.dispose();
+    plateController.dispose();
     cashReceivedController.dispose();
     super.dispose();
   }
@@ -291,7 +293,7 @@ String paymentType = 'regular';
     final plateNumber = activeTicketData?['plateNumber']?.toString() ?? '';
     final enteredDisplay =
         activeTicketData?['timeEnteredDisplay']?.toString() ?? '';
-    final vehicleType = activeTicketData?['vehicleType']?.toString() ?? '';
+    //final vehicleType = activeTicketData?['vehicleType']?.toString() ?? '';
 
     return Scaffold(
       backgroundColor: kGoldBg,
@@ -343,10 +345,10 @@ String paymentType = 'regular';
                     child: Column(
                       children: [
                         TextField(
-                          controller: ticketController,
+                          controller: plateController,
                           decoration: inputDecoration(
-                            hint: "Enter Ticket Number",
-                            icon: Icons.confirmation_number_outlined,
+                            hint: "Enter Plate Number",
+                            icon: Icons.directions_car,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -411,8 +413,13 @@ String paymentType = 'regular';
                       children: [
                         _ReadOnlyRow(label: 'Plate Number', value: plateNumber),
                         const SizedBox(height: 10),
-                        _ReadOnlyRow(label: 'Vehicle Type', value: vehicleType),
+                        _ReadOnlyRow(
+                          label: 'Parking Slot',
+                          value: activeTicketData?['parkingSlot']?.toString() ?? '',
+                        ),
                         const SizedBox(height: 10),
+                        //_ReadOnlyRow(label: 'Vehicle Type', value: vehicleType),
+                        //const SizedBox(height: 10),
                         _ReadOnlyRow(label: 'Time Entered', value: enteredDisplay),
                         const SizedBox(height: 10),
                         _ReadOnlyRow(
