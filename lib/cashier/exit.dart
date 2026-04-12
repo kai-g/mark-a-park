@@ -138,13 +138,21 @@ String paymentType = 'regular';
   }
 
   double get cashReceived {
-    return double.tryParse(cashReceivedController.text.trim()) ?? 0.0;
+    final value =
+        double.tryParse(cashReceivedController.text.trim()) ?? 0.0;
+
+    // ROUND INPUT ALSO
+    return double.parse(value.toStringAsFixed(2));
   }
 
   // CALCULATE CHANGE
   double get change {
     final value = cashReceived - amountDue;
-    return value < 0 ? 0 : value;
+
+    if (value < 0) return 0;
+
+    // DECIMAL ROUNDING
+    return double.parse(value.toStringAsFixed(2));
   }
 
   String formatDateTime(DateTime dt) {

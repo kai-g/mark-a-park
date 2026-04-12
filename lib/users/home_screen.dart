@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     // PLACEHOLDER IMAGE - TO CHANGE
-                    Image.asset("assets/placeholder_img.jpg", fit: BoxFit.cover),
+                    Image.asset("assets/parking_lot_1.jpg", fit: BoxFit.cover),
                     Container(color: Colors.black.withOpacity(0.25)),
                     Center(
                       child: Column(
