@@ -9,6 +9,8 @@ class MonitoringScreenA extends StatefulWidget {
 }
 
 class _MonitoringScreenAState extends State<MonitoringScreenA> {
+  // ACTIVE TICKETS MAP
+Map<String, bool> activeTicketSlots = {};
   final DatabaseReference parkingRef = FirebaseDatabase.instance.ref("parking");
 
   static const int totalCapacity = 6;
@@ -53,6 +55,31 @@ class _MonitoringScreenAState extends State<MonitoringScreenA> {
           }
         }
       }
+      // ACTIVE TICKETS LISTENER
+      FirebaseDatabase.instance.ref("activeTickets").onValue.listen((event) {
+        final data = event.snapshot.value;
+
+        final Map<String, bool> next = {};
+
+        if (data is Map) {
+          final map = Map<String, dynamic>.from(data);
+
+          for (final item in map.values) {
+            final ticket = Map<String, dynamic>.from(item);
+
+            if (ticket["status"] == "active") {
+              final slot = ticket["parkingSlot"];
+              if (slot != null) {
+                next[slot] = true;
+              }
+            }
+          }
+        }
+
+        setState(() {
+          activeTicketSlots = next;
+        });
+      });
 
       setState(() {
         carsEntered = nextCarsEntered;
@@ -190,25 +217,57 @@ class _MonitoringScreenAState extends State<MonitoringScreenA> {
                       children: [
                         Row(
                           children: [
-                            Expanded(child: _SlotPill(letter: "A", status: slots["A"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                              letter: "A",
+                              status: slots["A"] ?? "vacant",
+                              hasActiveTicket: activeTicketSlots["A"] == true,
+                            )
+                            ),
                             const SizedBox(width: 10),
-                            Expanded(child: _SlotPill(letter: "D", status: slots["D"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                              letter: "D",
+                              status: slots["D"] ?? "vacant",
+                              hasActiveTicket: activeTicketSlots["D"] == true,
+                            )
+                            ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            Expanded(child: _SlotPill(letter: "B", status: slots["B"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                              letter: "B",
+                              status: slots["B"] ?? "vacant",
+                              hasActiveTicket: activeTicketSlots["B"] == true,
+                            )),
                             const SizedBox(width: 10),
-                            Expanded(child: _SlotPill(letter: "E", status: slots["E"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                              letter: "E",
+                              status: slots["E"] ?? "vacant",
+                              hasActiveTicket: activeTicketSlots["E"] == true,
+                            )),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            Expanded(child: _SlotPill(letter: "C", status: slots["C"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                              letter: "C",
+                              status: slots["C"] ?? "vacant",
+                              hasActiveTicket: activeTicketSlots["C"] == true,
+                            )),
                             const SizedBox(width: 10),
-                            Expanded(child: _SlotPill(letter: "F", status: slots["F"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                              letter: "F",
+                              status: slots["F"] ?? "vacant",
+                              hasActiveTicket: activeTicketSlots["F"] == true,
+                            )),
                           ],
                         ),
                       ],
@@ -317,26 +376,95 @@ class _StatusRow extends StatelessWidget {
 class _SlotPill extends StatelessWidget {
   final String letter;
   final String status;
+  final bool hasActiveTicket;
 
-  const _SlotPill({required this.letter, required this.status});
+  const _SlotPill({
+    required this.letter,
+    required this.status,
+    required this.hasActiveTicket,
+  });
 
   // SHOW ADMIN SLOT OPTIONS
-void _showSlotOptions(BuildContext context, String slot, String status) {
+void _showSlotOptions(BuildContext context, String slot, String status, bool hasActiveTicket) {
   final ref = FirebaseDatabase.instance.ref("parking/slots/$slot");
 
+  // ACTIVE TICKETS REF
+  final ticketsRef = FirebaseDatabase.instance.ref("activeTickets");
+
+  // FORMAT DURATION
+  String formatDuration(DateTime start) {
+    final diff = DateTime.now().difference(start);
+    final h = diff.inHours;
+    final m = diff.inMinutes % 60;
+    return "${h}h ${m}m";
+  }
+
   final s = status.toLowerCase();
+
+  // CHECK IF RESERVED (VACANT + ACTIVE TICKET)
+  final bool isTaken = s == "vacant" && hasActiveTicket;
 
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text("SLOT $slot: ${s[0].toUpperCase()}${s.substring(1)}"),
+        title: Text(
+          isTaken
+              ? "SLOT $slot: Taken"
+              : "SLOT $slot: ${s[0].toUpperCase()}${s.substring(1)}",
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
 
+            // TAKEN SLOT (RESERVED)
+            if (isTaken) ...[
+              FutureBuilder(
+                future: ticketsRef.get(),
+                builder: (context, snapshot) {
+                  String plate = "N/A";
+                  String timeDisplay = "N/A";
+
+                  if (snapshot.hasData && snapshot.data!.value != null) {
+                    final data = Map<String, dynamic>.from(snapshot.data!.value as Map);
+
+                    for (final item in data.values) {
+                      final map = Map<String, dynamic>.from(item);
+
+                      if (map["parkingSlot"] == slot && map["status"] == "active") {
+                        plate = map["plateNumber"] ?? "N/A";
+                        timeDisplay = map["timeEnteredDisplay"] ?? "N/A";
+                        break;
+                      }
+                    }
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Slot currently taken: $plate",
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Entry Time: $timeDisplay",
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                      const SizedBox(height: 10),
+
+                      ElevatedButton(
+                        onPressed: null,
+                        child: const Text("Disable Parking Slot"),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+
             // VACANT SLOT
-            if (s == "vacant")
+            if (s == "vacant" && !isTaken)
               ElevatedButton(
                 onPressed: () async {
                   await ref.set("unavailable");
@@ -347,14 +475,61 @@ void _showSlotOptions(BuildContext context, String slot, String status) {
 
             // OCCUPIED SLOT
             if (s == "occupied") ...[
-              const Text(
-                "Slot currently occupied",
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: null,
-                child: const Text("Disable Parking Slot"),
+              FutureBuilder(
+                future: ticketsRef.get(),
+                builder: (context, snapshot) {
+                  String plate = "N/A";
+                  String timeDisplay = "N/A";
+                  String duration = "N/A";
+
+                  if (snapshot.hasData && snapshot.data!.value != null) {
+                    final data = Map<String, dynamic>.from(snapshot.data!.value as Map);
+
+                    for (final item in data.values) {
+                      final map = Map<String, dynamic>.from(item);
+
+                      if (map["parkingSlot"] == slot && map["status"] == "active") {
+                        plate = map["plateNumber"] ?? "N/A";
+                        timeDisplay = map["timeEnteredDisplay"] ?? "N/A";
+
+                        final rawTime = map["timeEntered"];
+                        if (rawTime != null) {
+                          final dt = DateTime.tryParse(rawTime);
+                          if (dt != null) {
+                            duration = formatDuration(dt);
+                          }
+                        }
+                        break;
+                      }
+                    }
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Slot currently occupied: $plate",
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Entry Time: $timeDisplay",
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Current Duration: $duration",
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 10),
+
+                      ElevatedButton(
+                        onPressed: null,
+                        child: const Text("Disable Parking Slot"),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
 
@@ -389,6 +564,9 @@ void _showSlotOptions(BuildContext context, String slot, String status) {
     } else if (isUnavailable) {
       bg = Colors.grey;
       label = "Unavailable";
+    } else if (hasActiveTicket) {
+      bg = Colors.yellow;
+      label = "Taken";
     } else {
       bg = Colors.green;
       label = "Vacant";
@@ -396,7 +574,7 @@ void _showSlotOptions(BuildContext context, String slot, String status) {
 
     return GestureDetector(
   onTap: () {
-    _showSlotOptions(context, letter, status);
+    _showSlotOptions(context, letter, status, hasActiveTicket);
   },
   child: Container(
       height: 38,

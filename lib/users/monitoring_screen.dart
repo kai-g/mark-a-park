@@ -10,6 +10,8 @@ class MonitoringScreen extends StatefulWidget {
 
 class _MonitoringScreenState extends State<MonitoringScreen> {
   final DatabaseReference parkingRef = FirebaseDatabase.instance.ref("parking");
+  // ACTIVE TICKETS MAP
+  Map<String, bool> activeTicketSlots = {};
 
   static const int totalCapacity = 6;
 
@@ -27,6 +29,31 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
   @override
   void initState() {
     super.initState();
+    // ACTIVE TICKETS LISTENER
+    FirebaseDatabase.instance.ref("activeTickets").onValue.listen((event) {
+      final data = event.snapshot.value;
+
+      final Map<String, bool> next = {};
+
+      if (data is Map) {
+        final map = Map<String, dynamic>.from(data);
+
+        for (final item in map.values) {
+          final ticket = Map<String, dynamic>.from(item);
+
+          if (ticket["status"] == "active") {
+            final slot = ticket["parkingSlot"];
+            if (slot != null) {
+              next[slot] = true;
+            }
+          }
+        }
+      }
+
+      setState(() {
+        activeTicketSlots = next;
+      });
+    });
 
     parkingRef.onValue.listen((event) {
       final data = event.snapshot.value;
@@ -197,25 +224,55 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                       children: [
                         Row(
                           children: [
-                            Expanded(child: _SlotPill(letter: "A", status: slots["A"] ?? "vacant")),
+                            Expanded(child:
+                              _SlotPill(
+                                letter: "A",
+                                status: slots["A"] ?? "vacant",
+                                hasActiveTicket: activeTicketSlots["A"] == true,
+                              )),
                             const SizedBox(width: 10),
-                            Expanded(child: _SlotPill(letter: "D", status: slots["D"] ?? "vacant")),
+                            Expanded(child:
+                              _SlotPill(
+                                  letter: "D",
+                                  status: slots["D"] ?? "vacant",
+                                  hasActiveTicket: activeTicketSlots["D"] == true,
+                              )),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            Expanded(child: _SlotPill(letter: "B", status: slots["B"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                                letter: "B",
+                                status: slots["B"] ?? "vacant",
+                                hasActiveTicket: activeTicketSlots["B"] == true,
+                              )),
                             const SizedBox(width: 10),
-                            Expanded(child: _SlotPill(letter: "E", status: slots["E"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                                letter: "E",
+                                status: slots["E"] ?? "vacant",
+                                hasActiveTicket: activeTicketSlots["E"] == true,
+                              )),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            Expanded(child: _SlotPill(letter: "C", status: slots["C"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                                letter: "C",
+                                status: slots["C"] ?? "vacant",
+                                hasActiveTicket: activeTicketSlots["C"] == true,
+                              )),
                             const SizedBox(width: 10),
-                            Expanded(child: _SlotPill(letter: "F", status: slots["F"] ?? "vacant")),
+                            Expanded(child:
+                            _SlotPill(
+                                letter: "F",
+                                status: slots["F"] ?? "vacant",
+                                hasActiveTicket: activeTicketSlots["F"] == true,
+                              )),
                           ],
                         ),
                       ],
@@ -324,8 +381,13 @@ class _StatusRow extends StatelessWidget {
 class _SlotPill extends StatelessWidget {
   final String letter;
   final String status;
+  final bool hasActiveTicket;
 
-  const _SlotPill({required this.letter, required this.status});
+  const _SlotPill({
+    required this.letter,
+    required this.status,
+    required this.hasActiveTicket,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -342,6 +404,9 @@ class _SlotPill extends StatelessWidget {
     } else if (isUnavailable) {
       bg = Colors.grey;
       label = "Unavailable";
+    } else if (s == "vacant" && hasActiveTicket) {
+      bg = Colors.yellow;
+      label = "Taken";
     } else {
       bg = Colors.green;
       label = "Vacant";
