@@ -21,7 +21,7 @@ class AdminShell extends StatelessWidget {
           DashboardScreenA(),
           MonitoringScreenA(),
           AccountsScreenA(),
-          MaintenanceScreenA(),
+          //MaintenanceScreenA(),
           ProfileScreenA(),
         ];
 
@@ -39,7 +39,7 @@ class AdminShell extends StatelessWidget {
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Dashboard"),
               BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: "Monitoring"),
               BottomNavigationBarItem(icon: Icon(Icons.manage_accounts), label: "Accounts"),
-              BottomNavigationBarItem(icon: Icon(Icons.build), label: "Maintenance"),
+              //BottomNavigationBarItem(icon: Icon(Icons.build), label: "Maintenance"),
               BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
             ],
           ),

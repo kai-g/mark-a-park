@@ -4,15 +4,7 @@ import 'home_screen.dart';
 import 'venue_screen.dart';
 import 'monitoring_screen.dart';
 import 'account_screen.dart';
-
-// PLACEHOLDER SCREEN - TO CHANGE
-class AboutScreen extends StatelessWidget {
-  const AboutScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) =>
-      const Center(child: Text("ABOUT SCREEN - NOT YET BUILT"));
-}
+import 'about.dart';
 
 class UserShell extends StatelessWidget {
   const UserShell({super.key});

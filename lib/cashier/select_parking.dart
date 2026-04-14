@@ -179,33 +179,66 @@ class _SelectParkingScreenState extends State<SelectParkingScreen> {
 
                 const SizedBox(height: 20),
 
-                Row(
-                  children: [
-                    slotBox("A"),
-                    const SizedBox(width: 10),
-                    slotBox("D"),
-                  ],
-                ),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x22000000),
+        blurRadius: 10,
+        offset: Offset(0, 3),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Parking Slots",
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Container(height: 1, color: Colors.black12),
 
-                const SizedBox(height: 10),
+      const SizedBox(height: 12),
 
-                Row(
-                  children: [
-                    slotBox("B"),
-                    const SizedBox(width: 10),
-                    slotBox("E"),
-                  ],
-                ),
+      Row(
+        children: [
+          slotBox("A"),
+          const SizedBox(width: 10),
+          slotBox("D"),
+        ],
+      ),
 
-                const SizedBox(height: 10),
+      const SizedBox(height: 10),
 
-                Row(
-                  children: [
-                    slotBox("C"),
-                    const SizedBox(width: 10),
-                    slotBox("F"),
-                  ],
-                ),
+      Row(
+        children: [
+          slotBox("B"),
+          const SizedBox(width: 10),
+          slotBox("E"),
+        ],
+      ),
+
+      const SizedBox(height: 10),
+
+      Row(
+        children: [
+          slotBox("C"),
+          const SizedBox(width: 10),
+          slotBox("F"),
+        ],
+      ),
+    ],
+  ),
+),
               ],
             ),
           ),

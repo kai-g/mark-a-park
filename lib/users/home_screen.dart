@@ -133,7 +133,7 @@ class HomeScreen extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.asset(
-                            "assets/placeholder_img.jpg",
+                            "assets/parking_lot_vector_1.avif",
                             width: 92,
                             height: 92,
                             fit: BoxFit.cover,

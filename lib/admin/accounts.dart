@@ -18,6 +18,187 @@ class _AccountsScreenAState extends State<AccountsScreenA> {
   Map<String, dynamic> allUsers = {};
   bool isLoading = true;
 
+  // CREATE USER
+void showCreateUserDialog() {
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  String role = "user";
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      title: const Text("Create Account"),
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(hintText: "Username"),
+            ),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(hintText: "Email"),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(hintText: "Password"),
+            ),
+            const SizedBox(height: 10),
+
+            // ROLE DROPDOWN
+            DropdownButton<String>(
+              value: role,
+              isExpanded: true,
+              items: ["user", "cashier", "admin"]
+                  .map((r) => DropdownMenuItem(
+                        value: r,
+                        child: Text(r),
+                      ))
+                  .toList(),
+              onChanged: (val) {
+                if (val != null) role = val;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kGoldBg,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: () async {
+            final ref = FirebaseDatabase.instance.ref("users").push();
+
+            await ref.set({
+              "username": usernameController.text.trim(),
+              "email": emailController.text.trim(),
+              "password": passwordController.text.trim(),
+              "role": role,
+              "address": "",
+              "contact": "",
+              "nationality": "",
+              "sex": "",
+            });
+
+            Navigator.pop(context);
+            fetchUsers();
+          },
+          child: const Text("Create"),
+        ),
+      ],
+    ),
+  );
+}
+
+// EDIT ROLE
+void showEditRoleDialog(String userId, Map data) {
+  String role = data["role"] ?? "user";
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      title: const Text("Edit Role"),
+      content: DropdownButton<String>(
+        value: role,
+        isExpanded: true,
+        items: ["user", "cashier", "admin"]
+            .map((r) => DropdownMenuItem(
+                  value: r,
+                  child: Text(r),
+                ))
+            .toList(),
+        onChanged: (val) {
+          if (val != null) {
+            role = val;
+          }
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kGoldBg,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: () async {
+            await FirebaseDatabase.instance
+                .ref("users/$userId/role")
+                .set(role);
+
+            Navigator.pop(context);
+            fetchUsers();
+          },
+          child: const Text("Save"),
+        ),
+      ],
+    ),
+  );
+}
+
+// DELETE USER
+void deleteUser(String userId) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      title: const Text("Delete User"),
+      content: const Text("Are you sure you want to delete this account?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text("Delete"),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm == true) {
+    await FirebaseDatabase.instance.ref("users/$userId").remove();
+    fetchUsers();
+  }
+}
+
   @override
   void initState() {
     super.initState();
@@ -129,7 +310,24 @@ class _AccountsScreenAState extends State<AccountsScreenA> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 14)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // EDIT ROLE
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  onPressed: () => showEditRoleDialog(userId, data),
+                ),
+
+                // DELETE USER
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                  onPressed: () => deleteUser(userId),
+                ),
+
+                const Icon(Icons.arrow_forward_ios, size: 14),
+              ],
+            )
           ],
         ),
       ),
@@ -180,6 +378,31 @@ class _AccountsScreenAState extends State<AccountsScreenA> {
                 ),
 
                 const SizedBox(height: 20),
+
+                // CREATE USER BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  height: 45,
+                  child: ElevatedButton.icon(
+                    onPressed: showCreateUserDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.black12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.person_add_alt_1_outlined),
+                    label: const Text(
+                      "Create New Account",
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
 
                 // 🔹 TABS
                 Row(

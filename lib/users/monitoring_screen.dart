@@ -61,8 +61,8 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
 
       final map = Map<String, dynamic>.from(data);
 
-      final ce = map["carsEntered"];
-      final nextCarsEntered = (ce is int) ? ce : int.tryParse("$ce") ?? 0;
+      //final ce = map["carsEntered"];
+      //final nextCarsEntered = (ce is int) ? ce : int.tryParse("$ce") ?? 0;
 
       final nextSlots = <String, String>{...slots};
       final slotData = map["slots"];
@@ -82,23 +82,48 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
       }
 
       setState(() {
-        carsEntered = nextCarsEntered;
+        //carsEntered = nextCarsEntered;
         slots = nextSlots;
       });
     });
   }
 
-  int get occupiedCount =>
-      slots.values.where((v) => v.toLowerCase() == "occupied").length;
+  // COMPUTED OCCUPIED (INCLUDING RESERVED)
+  int get occupiedCount {
+    int count = 0;
 
-  int get vacantCount => totalCapacity - occupiedCount;
+    for (final entry in slots.entries) {
+      final key = entry.key;
+      final value = entry.value.toLowerCase();
+
+      if (value == "occupied") {
+        count++;
+      } else if (value == "vacant" && activeTicketSlots[key] == true) {
+        count++; // 🔥 RESERVED COUNTS AS OCCUPIED
+      }
+    }
+
+    return count;
+  }
+
+  // UNAVAILABLE COUNT
+  int get unavailableCount =>
+      slots.values.where((v) => v.toLowerCase() == "unavailable").length;
+
+  // TRUE VACANT ONLY
+  int get vacantCount => totalCapacity - occupiedCount - unavailableCount;
+
+  // TOTAL CARS ENTERED = OCCUPIED
+  int get computedCarsEntered => occupiedCount;
 
   String get interpretationText {
-    if (carsEntered == 0) return "Completely Vacant";
-    if (carsEntered >= 1 && carsEntered <= 2) return "Many Vacant";
-    if (carsEntered == 3) return "Half Full";
-    if (carsEntered >= 4 && carsEntered <= 5) return "Almost Full";
-    if (carsEntered == 6) return "Full";
+    final c = computedCarsEntered;
+
+    if (c == 0) return "Completely Vacant";
+    if (c >= 1 && c <= 2) return "Many Vacant";
+    if (c == 3) return "Half Full";
+    if (c >= 4 && c <= 5) return "Almost Full";
+    if (c == 6) return "Full";
     return "Overloaded";
   }
 
@@ -192,7 +217,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                         icon: Icons.login,
                         iconColor: Colors.blue,
                         label: "Total Cars Entered",
-                        value: "$carsEntered",
+                        value: "$computedCarsEntered",
                         valueColor: Colors.blue,
                       ),
                       const SizedBox(height: 10),
@@ -211,6 +236,16 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                         value: "$vacantCount",
                         valueColor: Colors.green,
                       ),
+
+                      const SizedBox(height: 10),
+                      _StatusRow(
+                        icon: Icons.circle,
+                        iconColor: Colors.grey,
+                        label: "Unavailable Slots",
+                        value: "$unavailableCount",
+                        valueColor: Colors.grey,
+                      ),
+
                       const SizedBox(height: 6),
                     ],
                   ),

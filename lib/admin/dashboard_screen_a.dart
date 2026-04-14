@@ -191,15 +191,7 @@ void initState() {
                             AppStateA.currentTabIndex.value = 2;
                           },
                         ),
-                        const SizedBox(height: 10),
-                        _AdminButton(
-                          icon: Icons.build,
-                          label: "Slot Maintenance",
-                          color: kPrimaryYellow,
-                          onTap: () {
-                            AppStateA.currentTabIndex.value = 3;
-                          },
-                        ),
+                        
                       ],
                     ),
                   ),

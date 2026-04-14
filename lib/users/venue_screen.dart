@@ -27,7 +27,7 @@ class VenueScreen extends StatelessWidget {
                   children: [
                     // PLACEHOLDER IMAGE - TO CHANGE
                     Image.asset(
-                      "assets/placeholder_img.jpg",
+                      "assets/parking_lot_vector.avif",
                       fit: BoxFit.cover,
                     ),
                     Container(color: Colors.black.withOpacity(0.25)),

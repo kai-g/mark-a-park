@@ -211,19 +211,13 @@ class _EntryScreenState extends State<EntryScreen> {
 
                         SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.local_parking),
-                            label: Text(
-                              selectedSlot == null
-                                  ? "Select Parking"
-                                  : "Slot Selected: $selectedSlot",
-                            ),
-                            onPressed: () async {
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const SelectParkingScreen(),
+                                  builder: (_) => const SelectParkingScreen(),
                                 ),
                               );
 
@@ -233,6 +227,32 @@ class _EntryScreenState extends State<EntryScreen> {
                                 });
                               }
                             },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.black12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.local_parking_outlined, color: Colors.black),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      selectedSlot == null
+                                          ? "Select Parking"
+                                          : "Slot Selected: $selectedSlot",
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black45),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
 
