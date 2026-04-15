@@ -20,15 +20,51 @@ class _DashboardScreenAState extends State<DashboardScreenA> {
 final DatabaseReference parkingRef = FirebaseDatabase.instance.ref("parking");
 final DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
 
+// ACTIVE TICKETS REF
+final DatabaseReference activeTicketsRef =
+    FirebaseDatabase.instance.ref("activeTickets");
+
+// ACTIVE TICKETS MAP
+Map<String, bool> activeTicketSlots = {};
+
 // STATE VALUES
 int totalCapacity = 6;
 int occupied = 0;
 int vacant = 6;
 int totalUsers = 0;
 
+// UNAVAILABLE COUNT
+int unavailable = 0;
+
 @override
 void initState() {
   super.initState();
+
+  // ACTIVE TICKETS LISTENER
+  activeTicketsRef.onValue.listen((event) {
+    final data = event.snapshot.value;
+
+    final Map<String, bool> next = {};
+
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+
+      for (final item in map.values) {
+        final ticket = Map<String, dynamic>.from(item);
+
+        if (ticket["status"] == "active") {
+          final slot = ticket["parkingSlot"];
+          if (slot != null) {
+            next[slot] = true;
+          }
+        }
+      }
+    }
+
+    setState(() {
+      activeTicketSlots = next;
+    });
+  });
 
   // PARKING LISTENER
   parkingRef.onValue.listen((event) {
@@ -37,13 +73,25 @@ void initState() {
 
     final map = Map<String, dynamic>.from(data);
 
+    // COUNT OCCUPIED / UNAVAILABLE / RESERVED
     int occ = 0;
+    int unavail = 0;
 
     final slotData = map["slots"];
     if (slotData is Map) {
       final slotMap = Map<String, dynamic>.from(slotData);
-      for (final v in slotMap.values) {
-        if (v.toString().toLowerCase() == "occupied") {
+
+      for (final entry in slotMap.entries) {
+        final key = entry.key;
+        final value = entry.value.toString().toLowerCase();
+
+        if (value == "occupied") {
+          occ++;
+        } else if (value == "unavailable") {
+          unavail++;
+        } else if (value == "vacant" &&
+            activeTicketSlots[key] == true) {
+          // COUNT RESERVED AS OCCUPIED
           occ++;
         }
       }
@@ -51,7 +99,8 @@ void initState() {
 
     setState(() {
       occupied = occ;
-      vacant = totalCapacity - occ;
+      unavailable = unavail;
+      vacant = totalCapacity - occ - unavail;
     });
   });
 
@@ -155,6 +204,13 @@ void initState() {
                         iconColor: Colors.green,
                         label: "Vacant Slots",
                         value: "$vacant",
+                      ),
+                      const SizedBox(height: 10),
+                      _InfoRow(
+                        icon: Icons.circle,
+                        iconColor: Colors.grey,
+                        label: "Unavailable Slots",
+                        value: "$unavailable",
                       ),
                       const SizedBox(height: 10),
                       _InfoRow(

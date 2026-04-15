@@ -1,0 +1,123 @@
+{
+  "activeTickets": {
+    "-OqBeXevwihUt18blfsl": {
+      "entryCashierId": "cashier001",
+      "entryCashierName": "cashierUser",
+      "notes": "",
+      "parkingSlot": "C",
+      "plateNumber": "PLTE 123",
+      "status": "active",
+      "timeEntered": "2026-04-14T23:44:15.547576",
+      "timeEnteredDisplay": "04/14/2026  11:44 PM"
+    },
+    "-OqE2nzNGzUUxJftL5v1": {
+      "entryCashierId": "cashier001",
+      "entryCashierName": "cashierUser",
+      "notes": "Car with children",
+      "parkingSlot": "A",
+      "plateNumber": "ASEF 669",
+      "status": "active",
+      "timeEntered": "2026-04-15T10:53:54.509421",
+      "timeEnteredDisplay": "04/15/2026  10:53 AM"
+    }
+  },
+  "parking": {
+    "carsEntered": 0,
+    "carsEnteredToday": 0,
+    "carsExitedToday": 0,
+    "slots": {
+      "A": "vacant",
+      "B": "vacant",
+      "C": "occupied",
+      "D": "occupied",
+      "E": "vacant",
+      "F": "vacant"
+    }
+  },
+  "transactions": {
+    "-OpwGBqL4EM-t1ADEwOq": {
+      "amountDue": 40,
+      "cashReceived": 100,
+      "change": 60,
+      "durationMinutes": 107,
+      "durationText": "1h 47m",
+      "entryCashierId": "cashier001",
+      "entryCashierName": "cashierUser",
+      "exitCashierId": "cashier001",
+      "exitCashierName": "cashierUser",
+      "parkingSlot": "C",
+      "paymentMethod": "cash",
+      "paymentStatus": "paid",
+      "paymentType": "senior",
+      "plateNumber": "PLT556",
+      "status": "completed",
+      "timeEntered": "2026-04-11T17:31:54.244431",
+      "timeEnteredDisplay": "04/11/2026  5:31 PM",
+      "timeExited": "2026-04-11T19:19:37.114979",
+      "timeExitedDisplay": "04/11/2026  7:19 PM"
+    },
+    "-OqB_QsDSzOs4GMDndhJ": {
+      "amountDue": 0,
+      "cashReceived": 0,
+      "change": 0,
+      "durationMinutes": 0,
+      "durationText": "0h 0m",
+      "entryCashierId": "cashier001",
+      "entryCashierName": "cashierUser",
+      "exitCashierId": "cashier001",
+      "exitCashierName": "cashierUser",
+      "parkingSlot": "A",
+      "paymentMethod": "cash",
+      "paymentStatus": "paid",
+      "paymentType": "regular",
+      "plateNumber": "PLTE 246",
+      "status": "completed",
+      "timeEntered": "2026-04-14T23:21:24.943876",
+      "timeEnteredDisplay": "04/14/2026  11:21 PM",
+      "timeExited": "2026-04-14T23:21:57.007224",
+      "timeExitedDisplay": "04/14/2026  11:21 PM"
+    }
+  },
+  "users": {
+    "-OpX6mT1Pd4kmN0aP57w": {
+      "address": "",
+      "contact": "09393999339",
+      "email": "nardben98@gmail.com",
+      "nationality": "",
+      "password": "nardben98",
+      "role": "user",
+      "sex": "Male",
+      "username": "NardBen"
+    },
+    "admin001": {
+      "address": "",
+      "contact": "",
+      "email": "admin@test.com",
+      "nationality": "",
+      "password": "admin123",
+      "role": "admin",
+      "sex": "",
+      "username": "adminUser"
+    },
+    "cashier001": {
+      "address": "",
+      "contact": "",
+      "email": "cashier@test.com",
+      "nationality": "",
+      "password": "cashier123",
+      "role": "cashier",
+      "sex": "",
+      "username": "cashierUser"
+    },
+    "user001": {
+      "address": "Binangonan, Rizal",
+      "contact": "09876543212",
+      "email": "user@test.com",
+      "nationality": "Filipino",
+      "password": "ben123",
+      "role": "user",
+      "sex": "Male",
+      "username": "BenDriver"
+    }
+  }
+}

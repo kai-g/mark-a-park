@@ -30,14 +30,40 @@ Map<String, bool> activeTicketSlots = {};
   void initState() {
     super.initState();
 
+    // ACTIVE TICKETS LISTENER (SEPARATE)
+    FirebaseDatabase.instance.ref("activeTickets").onValue.listen((event) {
+      final data = event.snapshot.value;
+
+      final Map<String, bool> next = {};
+
+      if (data is Map) {
+        final map = Map<String, dynamic>.from(data);
+
+        for (final item in map.values) {
+          final ticket = Map<String, dynamic>.from(item);
+
+          if (ticket["status"] == "active") {
+            final slot = ticket["parkingSlot"];
+            if (slot != null) {
+              next[slot] = true;
+            }
+          }
+        }
+      }
+
+      setState(() {
+        activeTicketSlots = next;
+      });
+    });
+
     parkingRef.onValue.listen((event) {
       final data = event.snapshot.value;
       if (data is! Map) return;
 
       final map = Map<String, dynamic>.from(data);
 
-      final ce = map["carsEntered"];
-      final nextCarsEntered = (ce is int) ? ce : int.tryParse("$ce") ?? 0;
+      //final ce = map["carsEntered"];
+      //final nextCarsEntered = (ce is int) ? ce : int.tryParse("$ce") ?? 0;
 
       final nextSlots = <String, String>{...slots};
       final slotData = map["slots"];
@@ -55,50 +81,51 @@ Map<String, bool> activeTicketSlots = {};
           }
         }
       }
-      // ACTIVE TICKETS LISTENER
-      FirebaseDatabase.instance.ref("activeTickets").onValue.listen((event) {
-        final data = event.snapshot.value;
-
-        final Map<String, bool> next = {};
-
-        if (data is Map) {
-          final map = Map<String, dynamic>.from(data);
-
-          for (final item in map.values) {
-            final ticket = Map<String, dynamic>.from(item);
-
-            if (ticket["status"] == "active") {
-              final slot = ticket["parkingSlot"];
-              if (slot != null) {
-                next[slot] = true;
-              }
-            }
-          }
-        }
-
-        setState(() {
-          activeTicketSlots = next;
-        });
-      });
+      
 
       setState(() {
-        carsEntered = nextCarsEntered;
+
         slots = nextSlots;
       });
     });
   }
 
-  int get occupiedCount =>
-      slots.values.where((v) => v.toLowerCase() == "occupied").length;
+  // COMPUTED OCCUPIED (INCLUDING RESERVED)
+  int get occupiedCount {
+    int count = 0;
 
-  int get vacantCount => totalCapacity - occupiedCount;
+    for (final entry in slots.entries) {
+      final key = entry.key;
+      final value = entry.value.toLowerCase();
+
+      if (value == "occupied") {
+        count++;
+      } else if (value == "vacant" && activeTicketSlots[key] == true) {
+        count++; // RESERVED
+      }
+    }
+
+    return count;
+  }
+
+  // UNAVAILABLE COUNT
+  int get unavailableCount =>
+      slots.values.where((v) => v.toLowerCase() == "unavailable").length;
+
+  // TRUE VACANT ONLY
+  int get vacantCount => totalCapacity - occupiedCount - unavailableCount;
+
+  // TOTAL CARS ENTERED
+  int get computedCarsEntered => occupiedCount;
 
   String get interpretationText {
-    if (carsEntered == 0) return "Completely Vacant";
-    if (carsEntered >= 1 && carsEntered <= 2) return "Many Vacant";
-    if (carsEntered == 3) return "Half Full";
-    if (carsEntered >= 4 && carsEntered <= 5) return "Almost Full";
-    if (carsEntered == 6) return "Full";
+    final c = computedCarsEntered;
+
+    if (c == 0) return "Completely Vacant";
+    if (c >= 1 && c <= 2) return "Many Vacant";
+    if (c == 3) return "Half Full";
+    if (c >= 4 && c <= 5) return "Almost Full";
+    if (c == 6) return "Full";
     return "Overloaded";
   }
 
@@ -185,7 +212,7 @@ Map<String, bool> activeTicketSlots = {};
                         icon: Icons.login,
                         iconColor: Colors.blue,
                         label: "Total Cars Entered",
-                        value: "$carsEntered",
+                        value: "$computedCarsEntered",
                         valueColor: Colors.blue,
                       ),
                       const SizedBox(height: 10),
@@ -204,6 +231,15 @@ Map<String, bool> activeTicketSlots = {};
                         value: "$vacantCount",
                         valueColor: Colors.green,
                       ),
+                      const SizedBox(height: 10),
+                      _StatusRow(
+                        icon: Icons.circle,
+                        iconColor: Colors.grey,
+                        label: "Unavailable Slots",
+                        value: "$unavailableCount",
+                        valueColor: Colors.grey,
+                      ),
+
                       const SizedBox(height: 6),
                     ],
                   ),

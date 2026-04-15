@@ -22,21 +22,37 @@ class _DashboardScreenCState extends State<DashboardScreenC> {
   // FIREBASE REFERENCES
   final parkingRef = FirebaseDatabase.instance.ref('parking');
   final transactionsRef = FirebaseDatabase.instance.ref('transactions');
+  // ACTIVE TICKETS REF
+  final activeTicketsRef = FirebaseDatabase.instance.ref('activeTickets');
 
   @override
   void initState() {
     super.initState();
 
-    // LISTEN PARKING DATA
-    parkingRef.onValue.listen((event) {
+    // ACTIVE TICKETS LISTENER (CARS ENTERED)
+    activeTicketsRef.onValue.listen((event) {
 
-      if (!event.snapshot.exists) return;
+      if (!event.snapshot.exists) {
+        setState(() {
+          carsEnteredToday = 0;
+        });
+        return;
+      }
 
       final data = Map<String, dynamic>.from(event.snapshot.value as Map);
 
+      int count = 0;
+
+      for (final item in data.values) {
+        final ticket = Map<String, dynamic>.from(item);
+
+        if (ticket["status"] == "active") {
+          count++;
+        }
+      }
+
       setState(() {
-        carsEnteredToday = data['carsEnteredToday'] ?? 0;
-        carsExitedToday = data['carsExitedToday'] ?? 0;
+        carsEnteredToday = count;
       });
     });
 
@@ -52,8 +68,19 @@ class _DashboardScreenCState extends State<DashboardScreenC> {
 
       final data = Map<String, dynamic>.from(event.snapshot.value as Map);
 
+      int completedCount = 0;
+
+      for (final item in data.values) {
+        final tx = Map<String, dynamic>.from(item);
+
+        if (tx["status"] == "completed") {
+          completedCount++;
+        }
+      }
+
       setState(() {
-        paidTickets = data.length;
+        carsExitedToday = completedCount;
+        paidTickets = completedCount;
       });
     });
   }

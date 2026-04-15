@@ -358,7 +358,7 @@ void deleteUser(String userId) async {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Admin Dashboard",
+                          "Accounts Management",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
